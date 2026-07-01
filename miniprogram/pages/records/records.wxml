@@ -1,0 +1,208 @@
+<!--pages/records/records.wxml-->
+<view class="page">
+  <!-- 顶部标题 -->
+  <view class="header">
+    <view class="header-bg"></view>
+    <view class="header-content">
+      <view class="page-title">阅读记录</view>
+      <view class="page-subtitle">记录每一次成长的脚步 ✨</view>
+    </view>
+  </view>
+
+  <!-- Tab切换 -->
+  <view class="tabs">
+    <view 
+      class="tab-item {{activeTab === 'calendar' ? 'active' : ''}}"
+      data-tab="calendar"
+      bindtap="switchTab"
+    >
+      📅 日历
+    </view>
+    <view 
+      class="tab-item {{activeTab === 'analysis' ? 'active' : ''}}"
+      data-tab="analysis"
+      bindtap="switchTab"
+    >
+      📊 分析
+    </view>
+    <view 
+      class="tab-item {{activeTab === 'recommend' ? 'active' : ''}}"
+      data-tab="recommend"
+      bindtap="switchTab"
+    >
+      💡 推荐
+    </view>
+  </view>
+
+  <view class="content">
+    <!-- 日历视图 -->
+    <view class="tab-content" wx:if="{{activeTab === 'calendar'}}">
+      <!-- 统计卡片 -->
+      <view class="stats-card">
+        <view class="stat-item">
+          <view class="stat-icon">🔥</view>
+          <view class="stat-value">{{streakDays}}</view>
+          <view class="stat-label">连续天数</view>
+        </view>
+        <view class="stat-divider"></view>
+        <view class="stat-item">
+          <view class="stat-icon">📚</view>
+          <view class="stat-value">{{totalBooks}}</view>
+          <view class="stat-label">已读书籍</view>
+        </view>
+        <view class="stat-divider"></view>
+        <view class="stat-item">
+          <view class="stat-icon">⏱️</view>
+          <view class="stat-value">{{totalMinutes}}</view>
+          <view class="stat-label">阅读分钟</view>
+        </view>
+      </view>
+
+      <!-- 日历 -->
+      <view class="calendar-card">
+        <view class="calendar-header">
+          <view class="calendar-nav" bindtap="prevMonth">‹</view>
+          <view class="calendar-month">{{currentMonth}}</view>
+          <view class="calendar-nav" bindtap="nextMonth">›</view>
+        </view>
+        
+        <view class="weekdays">
+          <view class="weekday" wx:for="{{['日', '一', '二', '三', '四', '五', '六']}}" wx:key="*this">{{item}}</view>
+        </view>
+        
+        <view class="calendar-days">
+          <view 
+            wx:for="{{calendarDays}}" 
+            wx:key="index"
+            class="calendar-day {{item.isEmpty ? 'empty' : ''}} {{item.isMarked ? 'marked' : ''}} {{item.isToday ? 'today' : ''}}"
+          >
+            <view class="day-number">{{item.day}}</view>
+            <view class="day-dot" wx:if="{{item.isMarked}}"></view>
+          </view>
+        </view>
+
+        <view class="calendar-legend">
+          <view class="legend-item">
+            <view class="legend-dot marked"></view>
+            <text>已阅读</text>
+          </view>
+          <view class="legend-item">
+            <view class="legend-dot today"></view>
+            <text>今天</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 分析视图 -->
+    <view class="tab-content" wx:if="{{activeTab === 'analysis'}}">
+      <!-- 阅读偏好 -->
+      <view class="section-card">
+        <view class="card-title">📈 阅读偏好</view>
+        <view class="category-list">
+          <view class="category-item" wx:for="{{categoryData}}" wx:key="name">
+            <view class="category-info">
+              <view class="category-name">{{item.name}}</view>
+              <view class="category-count">{{item.count}}本</view>
+            </view>
+            <view class="category-bar-bg">
+              <view class="category-bar" style="width: {{item.count > 0 ? (item.count * 20) : 10}}%; background: {{item.color}}"></view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 本周阅读 -->
+      <view class="section-card">
+        <view class="card-title">📊 本周阅读时长</view>
+        <view class="weekly-chart">
+          <view class="chart-bars">
+            <view class="bar-item" wx:for="{{weeklyData}}" wx:key="date">
+              <view class="bar-wrapper">
+                <view 
+                  class="bar-fill" 
+                  style="height: {{item.minutes > 0 ? (item.minutes * 2) : 4}}rpx; background: linear-gradient(180deg, #FFD76E 0%, #FFC730 100%);"
+                ></view>
+              </view>
+              <view class="bar-label">{{item.dayName}}</view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 阅读成就 -->
+      <view class="section-card">
+        <view class="card-title">🏆 阅读成就</view>
+        <view class="achievement-summary">
+          <view class="achievement-item">
+            <view class="achievement-emoji">📖</view>
+            <view class="achievement-text">
+              <view class="achievement-name">初次阅读</view>
+              <view class="achievement-status">已解锁</view>
+            </view>
+          </view>
+          <view class="achievement-item">
+            <view class="achievement-emoji">✏️</view>
+            <view class="achievement-text">
+              <view class="achievement-name">答题小能手</view>
+              <view class="achievement-status">已解锁</view>
+            </view>
+          </view>
+          <view class="achievement-item">
+            <view class="achievement-emoji">🔍</view>
+            <view class="achievement-text">
+              <view class="achievement-name">探索家</view>
+              <view class="achievement-status">已解锁</view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 推荐视图 -->
+    <view class="tab-content" wx:if="{{activeTab === 'recommend'}}">
+      <view class="section-card">
+        <view class="card-title">💡 为你推荐</view>
+        <view class="recommend-desc">根据你的阅读喜好，这些书可能适合你哦～</view>
+        
+        <view class="recommend-list">
+          <view 
+            class="recommend-book" 
+            wx:for="{{recommendedBooks}}" 
+            wx:key="id"
+            data-bookid="{{item.id}}"
+            bindtap="goToReading"
+          >
+            <view class="book-cover" style="background: {{item.color}}">
+              <text class="cover-emoji">{{item.cover}}</text>
+            </view>
+            <view class="book-info">
+              <view class="book-tag">{{item.category}}</view>
+              <view class="book-title">{{item.title}}</view>
+              <view class="book-summary line-clamp-2">{{item.summary}}</view>
+              <view class="read-btn">立即阅读 →</view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="section-card">
+        <view class="card-title">🌟 热门推荐</view>
+        <view class="popular-grid">
+          <view 
+            class="popular-book" 
+            wx:for="{{books}}" 
+            wx:key="id"
+            data-bookid="{{item.id}}"
+            bindtap="goToReading"
+          >
+            <view class="popular-cover" style="background: {{item.color}}">
+              <text class="popular-emoji">{{item.cover}}</text>
+            </view>
+            <view class="popular-title">{{item.title}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

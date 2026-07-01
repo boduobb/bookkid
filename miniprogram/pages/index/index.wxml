@@ -1,0 +1,149 @@
+<!--pages/index/index.wxml-->
+<view class="page">
+  <!-- 顶部欢迎区 -->
+  <view class="header">
+    <view class="header-bg"></view>
+    <view class="header-content">
+      <view class="greeting-section">
+        <view class="mascot float">
+          <text class="mascot-emoji">🦉</text>
+        </view>
+        <view class="greeting-text">
+          <view class="greeting-title">{{greeting}}，{{userInfo.nickname}}！</view>
+          <view class="greeting-sub">{{encouragingText}}</view>
+        </view>
+      </view>
+
+      <!-- 用户信息卡片 -->
+      <view class="user-card">
+        <view class="user-info">
+          <view class="avatar">
+            <text class="avatar-emoji">👦</text>
+          </view>
+          <view class="user-detail">
+            <view class="level-tag">Lv.{{userInfo.level}}</view>
+            <view class="progress-bar">
+              <view class="progress-fill" style="width: {{levelProgress}}%"></view>
+            </view>
+          </view>
+        </view>
+        <view class="user-stats">
+          <view class="stat-item">
+            <view class="stat-value">{{userInfo.streakDays}}</view>
+            <view class="stat-label">连续天数</view>
+          </view>
+          <view class="stat-divider"></view>
+          <view class="stat-item">
+            <view class="stat-value">{{userInfo.booksRead}}</view>
+            <view class="stat-label">已读书籍</view>
+          </view>
+          <view class="stat-divider"></view>
+          <view class="stat-item">
+            <view class="stat-value">{{userInfo.stars}}</view>
+            <view class="stat-label">星星</view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="content">
+    <!-- 今日推荐 -->
+    <view class="section" wx:if="{{recommendedBook}}">
+      <view class="section-header">
+        <view class="section-title">
+          <text class="section-icon">📚</text>
+          今日推荐
+        </view>
+        <view class="section-more" bindtap="onStartReading">换一本 →</view>
+      </view>
+
+      <view class="recommend-card" bindtap="onStartReading">
+        <view class="recommend-bg" style="background: {{recommendedBook.color}}"></view>
+        <view class="recommend-content">
+          <view class="recommend-cover">
+            <text class="cover-emoji">{{recommendedBook.cover}}</text>
+          </view>
+          <view class="recommend-info">
+            <view class="recommend-category tag tag-amber">{{recommendedBook.category}}</view>
+            <view class="recommend-title">{{recommendedBook.title}}</view>
+            <view class="recommend-desc line-clamp-2">{{recommendedBook.summary}}</view>
+            <view class="recommend-btn">
+              <text>开始阅读</text>
+              <text class="btn-arrow">→</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 快速入口 -->
+    <view class="quick-actions">
+      <view class="action-item" bindtap="goToReading" data-bookid="">
+        <view class="action-icon camera">📷</view>
+        <view class="action-text">拍照读书</view>
+      </view>
+      <view class="action-item" bindtap="viewAllAchievements">
+        <view class="action-icon trophy">🏆</view>
+        <view class="action-text">成就中心</view>
+      </view>
+      <view class="action-item">
+        <view class="action-icon gift">🎁</view>
+        <view class="action-text">每日任务</view>
+      </view>
+      <view class="action-item">
+        <view class="action-icon star">⭐</view>
+        <view class="action-text">星星商店</view>
+      </view>
+    </view>
+
+    <!-- 我的书架 -->
+    <view class="section">
+      <view class="section-header">
+        <view class="section-title">
+          <text class="section-icon">📖</text>
+          我的书架
+        </view>
+        <view class="section-more">全部 →</view>
+      </view>
+
+      <scroll-view class="books-scroll" scroll-x enable-flex>
+        <view 
+          class="book-card" 
+          wx:for="{{books}}" 
+          wx:key="id"
+          bindtap="goToReading"
+          data-bookid="{{item.id}}"
+        >
+          <view class="book-cover" style="background: {{item.color}}">
+            <text class="book-cover-emoji">{{item.cover}}</text>
+          </view>
+          <view class="book-title line-clamp-1">{{item.title}}</view>
+          <view class="book-category">{{item.category}}</view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <!-- 成就勋章 -->
+    <view class="section">
+      <view class="section-header">
+        <view class="section-title">
+          <text class="section-icon">🏅</text>
+          我的成就
+        </view>
+        <view class="section-more" bindtap="viewAllAchievements">查看全部 →</view>
+      </view>
+
+      <view class="badges-grid">
+        <view 
+          class="badge-item {{item.unlocked ? 'unlocked' : 'locked'}}" 
+          wx:for="{{achievements}}" 
+          wx:key="id"
+        >
+          <view class="badge-icon">{{item.icon}}</view>
+          <view class="badge-name">{{item.name}}</view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

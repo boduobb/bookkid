@@ -1,0 +1,22 @@
+{
+  "name": "xiaoshutong-server",
+  "version": "1.0.0",
+  "description": "小书童AI阅读伙伴后端服务 - 对接星火大模型",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "ws": "^8.14.2",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.3.1",
+    "multer": "^1.4.5-lts.1",
+    "tencentcloud-sdk-nodejs": "^4.0.756"
+  },
+  "devDependencies": {
+    "pm2": "^5.3.0"
+  }
+}

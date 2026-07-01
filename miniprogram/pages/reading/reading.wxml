@@ -1,0 +1,235 @@
+<!--pages/reading/reading.wxml-->
+<view class="page">
+  <!-- 上传阶段 -->
+  <view class="upload-section" wx:if="{{phase === 'upload'}}">
+    <view class="upload-mascot bounce">🦉</view>
+    <view class="upload-title">嗨！我是小书童书书</view>
+    <view class="upload-desc">今天想读什么书呢？拍照上传或者从书架选一本吧！</view>
+    
+    <view class="upload-actions">
+      <view class="upload-btn primary" bindtap="goToUpload">
+        <text class="upload-btn-icon">📷</text>
+        <text class="upload-btn-text">拍照上传</text>
+        <text class="upload-btn-hint">支持最多9张</text>
+      </view>
+      <view class="upload-btn secondary" bindtap="chooseFromShelf">
+        <text class="upload-btn-icon">📚</text>
+        <text class="upload-btn-text">从书架选书</text>
+      </view>
+    </view>
+
+    <!-- 上传预览 -->
+    <view class="upload-preview" wx:if="{{uploadImages.length > 0}}">
+      <view class="preview-title">已选 {{uploadImages.length}} 张</view>
+      <scroll-view class="preview-scroll" scroll-x>
+        <view class="preview-images">
+          <image 
+            wx:for="{{uploadImages}}" 
+            wx:key="*this"
+            class="preview-image"
+            src="{{item}}"
+            mode="aspectFill"
+          />
+        </view>
+      </scroll-view>
+    </view>
+
+    <!-- 上传进度 -->
+    <view class="upload-progress" wx:if="{{isUploading}}">
+      <view class="progress-bar">
+        <view class="progress-fill" style="width: {{uploadProgress}}%"></view>
+      </view>
+      <view class="progress-text">识别中... {{uploadProgress}}%</view>
+    </view>
+    
+    <!-- 服务状态指示 -->
+    <view class="status-indicator {{isOnline ? 'online' : 'offline'}}">
+      <text class="status-dot"></text>
+      <text class="status-text">{{isOnline ? 'AI在线' : '本地模式'}}</text>
+    </view>
+  </view>
+
+  <!-- 阅读互动阶段 -->
+  <view class="reading-section" wx:if="{{phase !== 'upload'}}">
+    <!-- 顶部书籍信息 -->
+    <view class="book-header" wx:if="{{book}}">
+      <view class="book-info">
+        <view class="book-cover-mini" style="background: {{book.color}}">
+          <text class="cover-emoji">{{book.cover}}</text>
+        </view>
+        <view class="book-detail">
+          <view class="book-title">{{book.title}}</view>
+          <view class="book-author">{{book.category}}</view>
+        </view>
+      </view>
+      <!-- AI状态指示 -->
+      <view class="ai-status {{isOnline ? 'online' : 'offline'}}">
+        {{isOnline ? '🤖 星火AI' : '📖 本地'}}
+      </view>
+    </view>
+
+    <!-- 消息列表 -->
+    <scroll-view 
+      class="messages-container" 
+      scroll-y 
+      scroll-into-view="{{scrollToView}}"
+      scroll-with-animation
+    >
+      <view class="messages-list">
+        <view 
+          wx:for="{{messages}}" 
+          wx:key="id" 
+          id="msg-{{item.id}}"
+          class="message-item {{item.role}}"
+        >
+          <!-- AI消息 -->
+          <block wx:if="{{item.role === 'ai'}}">
+            <view class="message-avatar ai">🦉</view>
+            <view class="message-content">
+              <!-- 文字消息 -->
+              <view class="bubble ai-bubble" wx:if="{{item.type === 'text'}}">
+                {{item.content}}
+              </view>
+              
+              <!-- 故事内容 -->
+              <view class="bubble story-bubble" wx:if="{{item.type === 'story'}}">
+                <view class="story-title">📖 故事时间</view>
+                <view class="story-content">{{item.content}}</view>
+              </view>
+              
+              <!-- 选择题 -->
+              <view class="bubble quiz-bubble" wx:if="{{item.type === 'quiz'}}">
+                <view class="quiz-header">❓ 第{{item.quizIndex + 1}}题</view>
+                <view class="quiz-question">{{item.content}}</view>
+                <view class="quiz-options">
+                  <view 
+                    wx:for="{{item.options}}" 
+                    wx:for-item="opt" 
+                    wx:for-index="optIndex"
+                    wx:key="optIndex"
+                    class="quiz-option"
+                    data-index="{{optIndex}}"
+                    bindtap="onSelectQuizOption"
+                  >
+                    <view class="option-letter">{{['A', 'B', 'C', 'D'][optIndex]}}</view>
+                    <view class="option-text">{{opt}}</view>
+                  </view>
+                </view>
+              </view>
+              
+              <!-- 角色扮演选择 -->
+              <view class="bubble roleplay-bubble" wx:if="{{item.type === 'roleplay-select'}}">
+                <view class="roleplay-header">🎭 角色扮演</view>
+                <view class="roleplay-text">{{item.content}}</view>
+                <view class="roleplay-characters">
+                  <view 
+                    wx:for="{{item.characters}}" 
+                    wx:key="*this"
+                    class="character-btn"
+                    data-character="{{item}}"
+                    bindtap="onSelectCharacter"
+                  >
+                    {{item}}
+                  </view>
+                </view>
+              </view>
+            </view>
+          </block>
+
+          <!-- 用户消息 -->
+          <block wx:else>
+            <view class="message-content">
+              <view class="bubble user-bubble">{{item.content}}</view>
+            </view>
+            <view class="message-avatar user">👦</view>
+          </block>
+        </view>
+
+        <!-- 思考中 -->
+        <view class="message-item ai thinking" wx:if="{{isThinking}}">
+          <view class="message-avatar ai">🦉</view>
+          <view class="message-content">
+            <view class="bubble ai-bubble thinking-bubble">
+              <view class="thinking-dots">
+                <view class="dot"></view>
+                <view class="dot"></view>
+                <view class="dot"></view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+
+    <!-- 底部输入栏 -->
+    <view class="input-bar">
+      <view 
+        class="voice-btn {{isRecording ? 'recording' : ''}}"
+        bindtap="onToggleRecording"
+      >
+        <text class="voice-icon">🎤</text>
+      </view>
+      <view class="input-wrapper">
+        <input 
+          class="message-input" 
+          placeholder="说点什么..."
+          value="{{inputText}}"
+          bindinput="onInputChange"
+          confirm-type="send"
+          bindconfirm="onSendMessage"
+        />
+      </view>
+      <view 
+        class="send-btn {{inputText ? 'active' : ''}}"
+        bindtap="onSendMessage"
+      >
+        发送
+      </view>
+      <view class="sound-btn" bindtap="onPlayVoice">
+        <text class="sound-icon">🔊</text>
+      </view>
+    </view>
+
+    <!-- 完成阅读按钮 -->
+    <view class="complete-btn-wrapper" wx:if="{{phase === 'roleplay' && selectedCharacter}}">
+      <view class="complete-btn" bindtap="onCompleteReading">
+        <text class="complete-icon">⭐</text>
+        完成阅读，领取奖励
+      </view>
+    </view>
+  </view>
+
+  <!-- 完成弹窗 -->
+  <view class="complete-modal" wx:if="{{showCompleteModal}}">
+    <view class="modal-mask" bindtap="closeCompleteModal"></view>
+    <view class="modal-content bounce-in">
+      <view class="modal-header">
+        <view class="confetti">🎉</view>
+      </view>
+      <view class="modal-title">太棒啦！阅读完成！</view>
+      <view class="modal-desc">你今天表现得真出色！继续保持哦～</view>
+      
+      <view class="rewards-grid">
+        <view class="reward-item">
+          <view class="reward-icon">⭐</view>
+          <view class="reward-value">+15</view>
+          <view class="reward-label">星星</view>
+        </view>
+        <view class="reward-item">
+          <view class="reward-icon">🪙</view>
+          <view class="reward-value">+10</view>
+          <view class="reward-label">金币</view>
+        </view>
+        <view class="reward-item">
+          <view class="reward-icon">📚</view>
+          <view class="reward-value">+1</view>
+          <view class="reward-label">已读</view>
+        </view>
+      </view>
+
+      <view class="modal-btn" bindtap="closeCompleteModal">
+        返回首页
+      </view>
+    </view>
+  </view>
+</view>

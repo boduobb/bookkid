@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "小书童AI阅读伙伴",
+  "navigationBarBackgroundColor": "#FFF5E0",
+  "navigationBarTextStyle": "black",
+  "backgroundColor": "#FFFBF0",
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "dark"
+}

@@ -1,0 +1,258 @@
+/* app.wxss 全局样式 */
+
+page {
+  background-color: #FFFBF0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  color: #333;
+  font-size: 28rpx;
+  line-height: 1.6;
+}
+
+.container {
+  padding: 24rpx;
+  box-sizing: border-box;
+}
+
+/* 文字大小 */
+.text-xs { font-size: 20rpx; }
+.text-sm { font-size: 24rpx; }
+.text-base { font-size: 28rpx; }
+.text-lg { font-size: 32rpx; }
+.text-xl { font-size: 36rpx; }
+.text-2xl { font-size: 48rpx; }
+.text-3xl { font-size: 56rpx; }
+
+/* 字重 */
+.font-normal { font-weight: normal; }
+.font-medium { font-weight: 500; }
+.font-bold { font-weight: bold; }
+
+/* 文字颜色 */
+.text-gray-400 { color: #9CA3AF; }
+.text-gray-500 { color: #6B7280; }
+.text-gray-600 { color: #4B5563; }
+.text-gray-800 { color: #1F2937; }
+.text-white { color: #ffffff; }
+.text-amber-500 { color: #F59E0B; }
+.text-orange-500 { color: #F97316; }
+.text-sky-500 { color: #0EA5E9; }
+.text-green-500 { color: #10B981; }
+.text-pink-500 { color: #EC4899; }
+.text-purple-500 { color: #8B5CF6; }
+
+/* 背景色 */
+.bg-white { background-color: #ffffff; }
+.bg-cream-50 { background-color: #FFFBF0; }
+.bg-cream-100 { background-color: #FFF5E0; }
+.bg-cream-200 { background-color: #FFE8A3; }
+.bg-mint-50 { background-color: #F0FFF7; }
+.bg-mint-100 { background-color: #D4F7E3; }
+.bg-mint-200 { background-color: #A8E6CF; }
+.bg-sky-50 { background-color: #F0F9FF; }
+.bg-sky-100 { background-color: #E0F2FE; }
+bg-pink-50 { background-color: #FDF2F8; }
+.bg-purple-50 { background-color: #FAF5FF; }
+bg-amber-50 { background-color: #FFFBEB; }
+bg-orange-50 { background-color: #FFF7ED; }
+
+/* 圆角 */
+.rounded-lg { border-radius: 16rpx; }
+.rounded-xl { border-radius: 24rpx; }
+.rounded-2xl { border-radius: 32rpx; }
+.rounded-3xl { border-radius: 48rpx; }
+.rounded-full { border-radius: 9999rpx; }
+
+/* 阴影 */
+.shadow-sm { box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04); }
+.shadow-md { box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.08); }
+.shadow-lg { box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.1); }
+
+/* 间距 */
+.mt-2 { margin-top: 8rpx; }
+.mt-4 { margin-top: 16rpx; }
+.mt-6 { margin-top: 24rpx; }
+.mt-8 { margin-top: 32rpx; }
+.mb-2 { margin-bottom: 8rpx; }
+.mb-4 { margin-bottom: 16rpx; }
+.mb-6 { margin-bottom: 24rpx; }
+.mb-8 { margin-bottom: 32rpx; }
+.mr-2 { margin-right: 8rpx; }
+.mr-4 { margin-right: 16rpx; }
+.ml-2 { margin-left: 8rpx; }
+.ml-4 { margin-left: 16rpx; }
+.px-2 { padding-left: 8rpx; padding-right: 8rpx; }
+.px-4 { padding-left: 16rpx; padding-right: 16rpx; }
+.px-6 { padding-left: 24rpx; padding-right: 24rpx; }
+.py-2 { padding-top: 8rpx; padding-bottom: 8rpx; }
+.py-3 { padding-top: 12rpx; padding-bottom: 12rpx; }
+.py-4 { padding-top: 16rpx; padding-bottom: 16rpx; }
+.py-6 { padding-top: 24rpx; padding-bottom: 24rpx; }
+.p-4 { padding: 16rpx; }
+.p-6 { padding: 24rpx; }
+
+/* flex */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.flex-row { flex-direction: row; }
+.items-center { align-items: center; }
+.items-start { align-items: flex-start; }
+.items-end { align-items: flex-end; }
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.justify-around { justify-content: space-around; }
+.flex-1 { flex: 1; }
+.flex-shrink-0 { flex-shrink: 0; }
+.flex-wrap { flex-wrap: wrap; }
+.gap-2 { gap: 8rpx; }
+.gap-3 { gap: 12rpx; }
+.gap-4 { gap: 16rpx; }
+
+/* 文本对齐 */
+.text-left { text-align: left; }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+
+/* 溢出处理 */
+.overflow-hidden { overflow: hidden; }
+.text-ellipsis { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.line-clamp-1 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+/* 边框 */
+.border { border: 2rpx solid #E5E7EB; }
+.border-2 { border: 4rpx solid #E5E7EB; }
+.border-gray-100 { border-color: #F3F4F6; }
+.border-gray-200 { border-color: #E5E7EB; }
+.border-amber-200 { border-color: #FDE68A; }
+
+/* 定位 */
+.relative { position: relative; }
+.absolute { position: absolute; }
+.fixed { position: fixed; }
+.top-0 { top: 0; }
+.left-0 { left: 0; }
+.right-0 { right: 0; }
+.bottom-0 { bottom: 0; }
+.inset-0 { top: 0; left: 0; right: 0; bottom: 0; }
+.z-10 { z-index: 10; }
+.z-50 { z-index: 50; }
+
+/* 宽度 */
+.w-full { width: 100%; }
+.h-full { height: 100%; }
+
+/* 按钮基础样式 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20rpx 40rpx;
+  border-radius: 9999rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #FFD76E 0%, #FFC730 100%);
+  color: #fff;
+  box-shadow: 0 8rpx 24rpx rgba(255, 199, 48, 0.4);
+}
+
+.btn-secondary {
+  background-color: #F0F9FF;
+  color: #0EA5E9;
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #6DD3A8 0%, #3CC080 100%);
+  color: #fff;
+  box-shadow: 0 8rpx 24rpx rgba(60, 192, 128, 0.4);
+}
+
+.btn-outline {
+  background-color: #fff;
+  border: 2rpx solid #E5E7EB;
+  color: #4B5563;
+}
+
+/* 卡片 */
+.card {
+  background-color: #fff;
+  border-radius: 32rpx;
+  padding: 32rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.06);
+}
+
+/* 标签 */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 8rpx 20rpx;
+  border-radius: 9999rpx;
+  font-size: 22rpx;
+  line-height: 1.4;
+}
+
+.tag-amber {
+  background-color: #FFFBEB;
+  color: #D97706;
+}
+
+.tag-sky {
+  background-color: #F0F9FF;
+  color: #0284C7;
+}
+
+.tag-mint {
+  background-color: #F0FFF7;
+  color: #059669;
+}
+
+.tag-pink {
+  background-color: #FDF2F8;
+  color: #DB2777;
+}
+
+.tag-purple {
+  background-color: #FAF5FF;
+  color: #7C3AED;
+}
+
+/* 动画类 */
+.bounce {
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10rpx); }
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.float {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12rpx); }
+}

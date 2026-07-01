@@ -1,0 +1,160 @@
+<!--pages/profile/profile.wxml-->
+<view class="page">
+  <!-- 头部用户信息 -->
+  <view class="header">
+    <view class="header-bg"></view>
+    <view class="header-content">
+      <view class="user-section">
+        <view class="avatar-wrapper" bindtap="onChooseAvatar">
+          <view class="avatar">
+            <text class="avatar-emoji">👦</text>
+          </view>
+          <view class="avatar-edit">✏️</view>
+        </view>
+        <view class="user-info" bindtap="onEditNickname">
+          <view class="user-name">
+            {{userInfo.nickname}}
+            <text class="edit-icon">✏️</text>
+          </view>
+          <view class="user-level">
+            <view class="level-badge">Lv.{{userInfo.level}}</view>
+            <view class="level-bar">
+              <view class="level-fill" style="width: {{levelProgress}}%"></view>
+            </view>
+            <view class="level-text">{{userInfo.totalReadTime}}/{{expPerLevel}} 经验</view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 数据统计 -->
+      <view class="stats-row">
+        <view class="stat-card">
+          <view class="stat-num">{{userInfo.stars}}</view>
+          <view class="stat-label">⭐ 星星</view>
+        </view>
+        <view class="stat-card">
+          <view class="stat-num">{{userInfo.coins}}</view>
+          <view class="stat-label">🪙 金币</view>
+        </view>
+        <view class="stat-card">
+          <view class="stat-num">{{userInfo.streakDays}}</view>
+          <view class="stat-label">🔥 连续</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="content">
+    <!-- 成就勋章 -->
+    <view class="section-card">
+      <view class="card-header">
+        <view class="card-title">🏅 我的成就</view>
+        <view class="card-subtitle">{{unlockedCount}}/{{achievements.length}}</view>
+      </view>
+      <view class="badges-grid">
+        <view 
+          wx:for="{{achievements}}" 
+          wx:key="id"
+          class="badge-item {{item.unlocked ? 'unlocked' : 'locked'}}"
+          data-id="{{item.id}}"
+          bindtap="onViewAchievement"
+        >
+          <view class="badge-icon">{{item.icon}}</view>
+          <view class="badge-name">{{item.name}}</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 虚拟形象 -->
+    <view class="section-card">
+      <view class="card-header">
+        <view class="card-title">👕 虚拟衣橱</view>
+        <view class="card-subtitle">用金币解锁更多装扮</view>
+      </view>
+      <view class="wardrobe-grid">
+        <view 
+          wx:for="{{wardrobe}}" 
+          wx:key="id"
+          class="wardrobe-item {{item.owned ? 'owned' : ''}}"
+          data-id="{{item.id}}"
+          bindtap="onBuyOutfit"
+        >
+          <view class="wardrobe-icon">{{item.icon}}</view>
+          <view class="wardrobe-name">{{item.name}}</view>
+          <view class="wardrobe-price" wx:if="{{!item.owned}}">🪙 {{item.price}}</view>
+          <view class="wardrobe-owned" wx:else>已拥有</view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 设置 -->
+    <view class="section-card">
+      <view class="card-title">⚙️ 设置</view>
+      <view class="settings-list">
+        <view class="setting-item" bindtap="goToAgentConfig">
+          <view class="setting-info">
+            <view class="setting-icon">🤖</view>
+            <view class="setting-name">智能体角色设置</view>
+          </view>
+          <view class="setting-arrow">›</view>
+        </view>
+        <view class="setting-item">
+          <view class="setting-info">
+            <view class="setting-icon">🔊</view>
+            <view class="setting-name">萌趣语音</view>
+          </view>
+          <switch 
+            checked="{{settings.voiceEnabled}}" 
+            color="#FFC730"
+            data-setting="voiceEnabled"
+            bindchange="onToggleSetting"
+          />
+        </view>
+        <view class="setting-item">
+          <view class="setting-info">
+            <view class="setting-icon">🔔</view>
+            <view class="setting-name">每日阅读提醒</view>
+          </view>
+          <switch 
+            checked="{{settings.dailyReminder}}" 
+            color="#FFC730"
+            data-setting="dailyReminder"
+            bindchange="onToggleSetting"
+          />
+        </view>
+        <view class="setting-item">
+          <view class="setting-info">
+            <view class="setting-icon">🎵</view>
+            <view class="setting-name">音效开关</view>
+          </view>
+          <switch 
+            checked="{{settings.soundEffects}}" 
+            color="#FFC730"
+            data-setting="soundEffects"
+            bindchange="onToggleSetting"
+          />
+        </view>
+      </view>
+    </view>
+
+    <!-- 其他 -->
+    <view class="section-card">
+      <view class="menu-list">
+        <view class="menu-item" bindtap="onAbout">
+          <view class="menu-icon">ℹ️</view>
+          <view class="menu-text">关于小书童</view>
+          <view class="menu-arrow">›</view>
+        </view>
+        <view class="menu-item" bindtap="onClearData">
+          <view class="menu-icon">🗑️</view>
+          <view class="menu-text">清除数据</view>
+          <view class="menu-arrow">›</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="footer-text">
+      小书童AI阅读伙伴 · 让阅读更有趣 📚
+    </view>
+  </view>
+</view>

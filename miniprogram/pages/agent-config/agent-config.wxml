@@ -1,0 +1,192 @@
+<view class="page">
+  <scroll-view class="content" scroll-y>
+    <view class="section">
+      <view class="section-title">基础信息</view>
+      
+      <view class="form-item">
+        <view class="label">名字</view>
+        <input 
+          class="input" 
+          placeholder="智能体名字" 
+          value="{{config.name}}"
+          data-field="name"
+          bindinput="onInputChange"
+        />
+      </view>
+
+      <view class="form-item">
+        <view class="label">头像表情</view>
+        <input 
+          class="input" 
+          placeholder="如：🦉" 
+          value="{{config.avatar}}"
+          data-field="avatar"
+          bindinput="onInputChange"
+        />
+      </view>
+
+      <view class="form-item">
+        <view class="label">身份角色</view>
+        <input 
+          class="input" 
+          placeholder="如：小书童" 
+          value="{{config.role}}"
+          data-field="role"
+          bindinput="onInputChange"
+        />
+      </view>
+
+      <view class="form-item">
+        <view class="label">性格特点</view>
+        <input 
+          class="input" 
+          placeholder="如：亲切友善" 
+          value="{{config.personality}}"
+          data-field="personality"
+          bindinput="onInputChange"
+        />
+      </view>
+
+      <view class="form-item">
+        <view class="label">说话风格</view>
+        <textarea 
+          class="textarea" 
+          placeholder="描述说话风格" 
+          value="{{config.speechStyle}}"
+          data-field="speechStyle"
+          bindinput="onInputChange"
+          auto-height
+        />
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">职责任务</view>
+      
+      <view class="duty-list">
+        <view 
+          class="duty-item" 
+          wx:for="{{config.duties}}" 
+          wx:key="index"
+        >
+          <view class="duty-content">{{index + 1}}. {{item}}</view>
+          <view class="delete-btn" data-index="{{index}}" bindtap="onDeleteDuty">删除</view>
+        </view>
+      </view>
+
+      <view class="add-row">
+        <input 
+          class="input flex-1" 
+          placeholder="添加一条职责" 
+          value="{{dutyInput}}"
+          bindinput="onDutyInput"
+          confirm-type="done"
+          bindconfirm="onAddDuty"
+        />
+        <view class="add-btn" bindtap="onAddDuty">添加</view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">交流设置</view>
+
+      <view class="form-item">
+        <view class="label">回复长度</view>
+        <textarea 
+          class="textarea" 
+          placeholder="回复长度要求" 
+          value="{{config.replyLength}}"
+          data-field="replyLength"
+          bindinput="onInputChange"
+          auto-height
+        />
+      </view>
+
+      <view class="form-item">
+        <view class="label">对孩子的称呼</view>
+        <input 
+          class="input" 
+          placeholder="如：小读者" 
+          value="{{config.addressChild}}"
+          data-field="addressChild"
+          bindinput="onInputChange"
+        />
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">鼓励词语</view>
+      
+      <view class="tag-list">
+        <view 
+          class="tag-item" 
+          wx:for="{{config.encouragementWords}}" 
+          wx:key="index"
+        >
+          <text class="tag-text">{{item}}</text>
+          <view class="tag-close" data-index="{{index}}" bindtap="onDeleteWord">×</view>
+        </view>
+      </view>
+
+      <view class="add-row">
+        <input 
+          class="input flex-1" 
+          placeholder="添加鼓励词语" 
+          value="{{wordInput}}"
+          bindinput="onWordInput"
+          confirm-type="done"
+          bindconfirm="onAddWord"
+        />
+        <view class="add-btn" bindtap="onAddWord">添加</view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">常用表情</view>
+      
+      <view class="emoji-list">
+        <view 
+          class="emoji-item" 
+          wx:for="{{config.emojis}}" 
+          wx:key="index"
+        >
+          <text class="emoji-text">{{item}}</text>
+          <view class="emoji-close" data-index="{{index}}" bindtap="onDeleteEmoji">×</view>
+        </view>
+      </view>
+
+      <view class="add-row">
+        <input 
+          class="input flex-1" 
+          placeholder="添加表情符号" 
+          value="{{emojiInput}}"
+          bindinput="onEmojiInput"
+          confirm-type="done"
+          bindconfirm="onAddEmoji"
+        />
+        <view class="add-btn" bindtap="onAddEmoji">添加</view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title">自定义设定</view>
+      <textarea 
+        class="textarea large" 
+        placeholder="在这里添加额外的自定义设定，AI会遵循这些设定与孩子交流..." 
+        value="{{config.customInstructions}}"
+        data-field="customInstructions"
+        bindinput="onInputChange"
+        auto-height
+      />
+    </view>
+
+    <view class="bottom-space"></view>
+  </scroll-view>
+
+  <view class="footer">
+    <view class="reset-btn" bindtap="onReset">恢复默认</view>
+    <view class="save-btn {{isSaving ? 'saving' : ''}}" bindtap="onSave">
+      {{isSaving ? '保存中...' : '保存设置'}}
+    </view>
+  </view>
+</view>

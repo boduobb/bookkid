@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "阅读记录",
+  "navigationBarBackgroundColor": "#E0F2FE",
+  "navigationBarTextStyle": "black",
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "dark"
+}
