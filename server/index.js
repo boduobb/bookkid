@@ -7,6 +7,8 @@ const path = require('path');
 const fs = require('fs');
 const { callSpark, buildReadingSystemPrompt, buildQuizSystemPrompt, buildRoleplaySystemPrompt } = require('./spark-api');
 const { recognizeMultipleImages, analyzeBookContent, analyzeMultipleBookImages } = require('./doubao-vision');
+const { recognizeAudio } = require('./doubao-asr');
+const { synthesizeSpeech } = require('./doubao-tts');
 const { loadConfig, saveConfig, resetConfig, buildSystemPromptFromConfig } = require('./agent-config');
 
 const app = express();
@@ -44,9 +46,34 @@ const upload = multer({
   }
 });
 
+// 语音上传配置
+const voiceStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const voiceDir = path.join(__dirname, 'voices');
+    if (!fs.existsSync(voiceDir)) {
+      fs.mkdirSync(voiceDir, { recursive: true });
+    }
+    cb(null, voiceDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, uniqueSuffix + '.pcm');
+  }
+});
+
+const voiceUpload = multer({
+  storage: voiceStorage,
+  limits: {
+    fileSize: 10 * 1024 * 1024,
+    files: 1
+  }
+});
+
 // 中间件
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/voices', express.static(path.join(__dirname, 'voices')));
 
 // 书籍数据（和小程序同步）
 const BOOKS = [
@@ -606,6 +633,73 @@ app.post('/api/agent/reset', (req, res) => {
   } catch (err) {
     console.error('重置智能体配置失败:', err);
     res.json({ success: false, message: err.message });
+  }
+});
+
+/**
+ * 语音识别 - 录音转文字
+ * POST /api/voice/recognize
+ * body: multipart/form-data (audio字段，PCM音频)
+ */
+app.post('/api/voice/recognize', voiceUpload.single('audio'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.json({ success: false, message: '请上传语音文件' });
+    }
+
+    console.log('收到语音文件:', req.file.filename, '大小:', req.file.size);
+
+    const text = await recognizeAudio(req.file.path);
+
+    console.log('语音识别结果:', text);
+
+    res.json({
+      success: true,
+      data: {
+        text: text,
+        audioUrl: `/voices/${req.file.filename}`
+      }
+    });
+
+  } catch (err) {
+    console.error('语音识别错误:', err);
+    res.json({ success: false, message: err.message || '语音识别失败' });
+  }
+});
+
+/**
+ * 语音合成 - 文字转语音
+ * POST /api/voice/synthesize
+ * body: { text }
+ */
+app.post('/api/voice/synthesize', async (req, res) => {
+  try {
+    const { text } = req.body;
+
+    if (!text || text.trim().length === 0) {
+      return res.json({ success: false, message: '文字内容不能为空' });
+    }
+
+    console.log('开始语音合成:', text.substring(0, 50) + '...');
+
+    const audioBuffer = await synthesizeSpeech(text);
+
+    const audioFileName = Date.now() + '-' + Math.round(Math.random() * 1E9) + '.mp3';
+    const audioPath = path.join(__dirname, 'voices', audioFileName);
+    fs.writeFileSync(audioPath, audioBuffer);
+
+    console.log('语音合成成功:', audioFileName, '大小:', audioBuffer.length);
+
+    res.json({
+      success: true,
+      data: {
+        audioUrl: `/voices/${audioFileName}`
+      }
+    });
+
+  } catch (err) {
+    console.error('语音合成错误:', err);
+    res.json({ success: false, message: err.message || '语音合成失败' });
   }
 });
 

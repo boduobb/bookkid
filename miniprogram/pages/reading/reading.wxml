@@ -89,12 +89,18 @@
               <!-- 文字消息 -->
               <view class="bubble ai-bubble" wx:if="{{item.type === 'text'}}">
                 {{item.content}}
+                <view class="voice-play-btn" wx:if="{{item.content}}" catchtap="onPlayMessageVoice" data-text="{{item.content}}">
+                  <text class="play-icon">🔊</text>
+                </view>
               </view>
               
               <!-- 故事内容 -->
               <view class="bubble story-bubble" wx:if="{{item.type === 'story'}}">
                 <view class="story-title">📖 故事时间</view>
                 <view class="story-content">{{item.content}}</view>
+                <view class="voice-play-btn" catchtap="onPlayMessageVoice" data-text="{{item.content}}">
+                  <text class="play-icon">🔊 朗读</text>
+                </view>
               </view>
               
               <!-- 选择题 -->
@@ -161,22 +167,31 @@
       </view>
     </scroll-view>
 
+    <!-- 录音提示 -->
+    <view class="recording-tip" wx:if="{{isRecording}}">
+      <view class="recording-icon">🎤</view>
+      <view class="recording-text">正在录音... 松开发送</view>
+    </view>
+
     <!-- 底部输入栏 -->
     <view class="input-bar">
       <view 
         class="voice-btn {{isRecording ? 'recording' : ''}}"
-        bindtap="onToggleRecording"
+        bindtouchstart="onStartRecording"
+        bindtouchend="onStopRecording"
+        bindtouchcancel="onStopRecording"
       >
-        <text class="voice-icon">🎤</text>
+        <text class="voice-icon">{{isRecording ? '🔴' : '🎤'}}</text>
       </view>
       <view class="input-wrapper">
         <input 
           class="message-input" 
-          placeholder="说点什么..."
+          placeholder="{{isRecording ? '正在录音...' : '说点什么...'}}"
           value="{{inputText}}"
           bindinput="onInputChange"
           confirm-type="send"
           bindconfirm="onSendMessage"
+          disabled="{{isRecording}}"
         />
       </view>
       <view 
@@ -184,9 +199,6 @@
         bindtap="onSendMessage"
       >
         发送
-      </view>
-      <view class="sound-btn" bindtap="onPlayVoice">
-        <text class="sound-icon">🔊</text>
       </view>
     </view>
 

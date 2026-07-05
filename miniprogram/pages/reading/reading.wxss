@@ -552,6 +552,53 @@
   font-size: 32rpx;
 }
 
+/* AI消息语音播放按钮 */
+.voice-play-btn {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 12rpx;
+  padding: 8rpx 20rpx;
+  background: rgba(255, 199, 48, 0.15);
+  border-radius: 24rpx;
+  font-size: 24rpx;
+  color: #FF9F43;
+}
+
+.play-icon {
+  font-size: 24rpx;
+}
+
+/* 录音提示 */
+.recording-tip {
+  position: fixed;
+  bottom: 160rpx;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24rpx 40rpx;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 20rpx;
+  z-index: 100;
+}
+
+.recording-icon {
+  font-size: 60rpx;
+  animation: pulse 1s infinite;
+}
+
+.recording-text {
+  font-size: 26rpx;
+  color: #fff;
+  margin-top: 12rpx;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+}
+
 /* 完成按钮 */
 .complete-btn-wrapper {
   position: fixed;

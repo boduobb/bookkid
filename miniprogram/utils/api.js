@@ -200,6 +200,43 @@ function resetAgentConfig() {
   return request('/api/agent/reset', 'POST');
 }
 
+/**
+ * 语音识别 - 上传录音文件转文字
+ * @param {string} filePath - 录音文件临时路径
+ */
+function recognizeVoice(filePath) {
+  return new Promise((resolve, reject) => {
+    wx.uploadFile({
+      url: API_BASE_URL + '/api/voice/recognize',
+      filePath: filePath,
+      name: 'audio',
+      success: (res) => {
+        try {
+          const data = JSON.parse(res.data);
+          if (data.success) {
+            resolve(data.data);
+          } else {
+            reject(new Error(data.message || '语音识别失败'));
+          }
+        } catch (err) {
+          reject(new Error('语音识别响应解析失败'));
+        }
+      },
+      fail: (err) => {
+        reject(new Error('语音上传失败: ' + err.errMsg));
+      }
+    });
+  });
+}
+
+/**
+ * 语音合成 - 文字转语音
+ * @param {string} text - 要合成的文字
+ */
+function synthesizeVoice(text) {
+  return request('/api/voice/synthesize', 'POST', { text });
+}
+
 module.exports = {
   API_BASE_URL,
   request,
@@ -217,5 +254,7 @@ module.exports = {
   sendUploadMessage,
   getAgentConfig,
   saveAgentConfig,
-  resetAgentConfig
+  resetAgentConfig,
+  recognizeVoice,
+  synthesizeVoice
 };

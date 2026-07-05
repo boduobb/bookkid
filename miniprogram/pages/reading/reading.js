@@ -511,20 +511,105 @@ Page({
   },
 
   onToggleRecording() {
-    const isRecording = !this.data.isRecording;
-    this.setData({ isRecording });
+    // 已改为按住说话模式，此方法保留兼容
+  },
+
+  // 按住开始录音
+  onStartRecording() {
+    this.setData({ isRecording: true });
+    this.recorderManager = wx.getRecorderManager();
     
-    if (isRecording) {
-      wx.showToast({ title: '开始录音...', icon: 'none' });
-      setTimeout(() => {
-        this.setData({ isRecording: false });
-        wx.showToast({ title: '语音识别开发中...', icon: 'none' });
-      }, 2000);
+    this.recorderManager.onStop((res) => {
+      this.setData({ isRecording: false });
+      if (res.duration < 1000) {
+        wx.showToast({ title: '说话时间太短啦', icon: 'none' });
+        return;
+      }
+      this.processVoiceFile(res.tempFilePath);
+    });
+
+    this.recorderManager.onError((err) => {
+      console.error('录音错误:', err);
+      this.setData({ isRecording: false });
+      wx.showToast({ title: '录音失败，请重试', icon: 'none' });
+    });
+
+    this.recorderManager.start({
+      duration: 60000,
+      sampleRate: 16000,
+      numberOfChannels: 1,
+      encodeBitRate: 48000,
+      format: 'pcm'
+    });
+  },
+
+  // 松开停止录音
+  onStopRecording() {
+    if (this.data.isRecording && this.recorderManager) {
+      this.recorderManager.stop();
+    }
+  },
+
+  // 处理语音文件 - 上传识别
+  async processVoiceFile(filePath) {
+    wx.showLoading({ title: '识别中...' });
+    try {
+      const result = await api.recognizeVoice(filePath);
+      const text = result.text;
+      
+      if (text && text.trim()) {
+        this.setData({ inputText: text });
+        wx.showToast({ title: '识别成功', icon: 'success' });
+        // 自动发送识别出的文字
+        this.onSendMessage();
+      } else {
+        wx.showToast({ title: '没听清，请再说一次', icon: 'none' });
+      }
+    } catch (err) {
+      console.error('语音识别失败:', err);
+      wx.showToast({ title: '语音识别失败: ' + err.message, icon: 'none' });
+    } finally {
+      wx.hideLoading();
+    }
+  },
+
+  // 播放AI消息的语音
+  async onPlayMessageVoice(e) {
+    const text = e.currentTarget.dataset.text;
+    if (!text) return;
+
+    wx.showLoading({ title: '语音合成中...' });
+    try {
+      const result = await api.synthesizeVoice(text);
+      const audioUrl = api.API_BASE_URL + result.audioUrl;
+      
+      if (this.innerAudioContext) {
+        this.innerAudioContext.stop();
+      }
+      
+      this.innerAudioContext = wx.createInnerAudioContext();
+      this.innerAudioContext.src = audioUrl;
+      this.innerAudioContext.onPlay(() => {
+        console.log('开始播放语音');
+      });
+      this.innerAudioContext.onEnded(() => {
+        console.log('语音播放结束');
+      });
+      this.innerAudioContext.onError((err) => {
+        console.error('播放错误:', err);
+        wx.showToast({ title: '播放失败', icon: 'none' });
+      });
+      this.innerAudioContext.play();
+    } catch (err) {
+      console.error('语音合成失败:', err);
+      wx.showToast({ title: '语音合成失败: ' + err.message, icon: 'none' });
+    } finally {
+      wx.hideLoading();
     }
   },
 
   onPlayVoice() {
-    wx.showToast({ title: '语音播放开发中...', icon: 'none' });
+    // 兼容旧代码
   },
 
   goToUpload() {
