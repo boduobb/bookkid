@@ -6,7 +6,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { callSpark, buildReadingSystemPrompt, buildQuizSystemPrompt, buildRoleplaySystemPrompt } = require('./spark-api');
-const { recognizeMultipleImages, analyzeBookContent } = require('./tencent-ocr');
+const { recognizeMultipleImages, analyzeBookContent, analyzeMultipleBookImages } = require('./doubao-vision');
 const { loadConfig, saveConfig, resetConfig, buildSystemPromptFromConfig } = require('./agent-config');
 
 const app = express();
@@ -401,21 +401,21 @@ app.post('/api/upload/recognize', upload.array('images', 20), async (req, res) =
     let bookData = null;
 
     try {
-      // 调用腾讯云OCR识别
-      console.log('开始调用腾讯云OCR...');
+      // 调用豆包Seed-Vision识别
+      console.log('开始调用豆包Seed-Vision识别...');
       ocrText = await recognizeMultipleImages(imagePaths);
       
       if (!ocrText || ocrText.trim().length === 0) {
         throw new Error('未能识别出文字内容');
       }
 
-      console.log('OCR识别成功，文字长度:', ocrText.length);
+      console.log('豆包识别成功，文字长度:', ocrText.length);
 
       // 分析书籍内容
       bookData = analyzeBookContent(ocrText);
       
     } catch (ocrErr) {
-      console.error('腾讯云OCR识别失败，切换到模拟模式:', ocrErr.message);
+      console.error('豆包识别失败，切换到模拟模式:', ocrErr.message);
       
       // OCR失败时，使用模拟数据
       const mockBooks = [
@@ -469,7 +469,7 @@ app.post('/api/upload/recognize', upload.array('images', 20), async (req, res) =
         })),
         ocrText: ocrText,
         confidence: 0.95,
-        ocrMode: bookData.title ? 'tencent' : 'demo'
+        ocrMode: bookData.title ? 'doubao' : 'demo'
       }
     });
 
