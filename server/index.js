@@ -5,7 +5,7 @@ const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const { callSpark, buildReadingSystemPrompt, buildQuizSystemPrompt, buildRoleplaySystemPrompt } = require('./spark-api');
+const { callDoubao, buildReadingSystemPrompt, buildQuizSystemPrompt, buildRoleplaySystemPrompt } = require('./doubao-chat');
 const { recognizeMultipleImages, analyzeBookContent, analyzeMultipleBookImages } = require('./doubao-vision');
 const { recognizeAudio } = require('./doubao-asr');
 const { synthesizeSpeech } = require('./doubao-tts');
@@ -187,7 +187,7 @@ app.post('/api/chat/start', async (req, res) => {
       { role: 'user', content: `请给孩子发送阅读开始的消息，用亲切的语气介绍这本书《${book.title}》，并引导孩子开始阅读。` }
     ];
 
-    const aiResponse = await callSpark(messages, systemPrompt);
+    const aiResponse = await callDoubao(messages, systemPrompt);
     
     res.json({ 
       success: true, 
@@ -225,7 +225,7 @@ app.post('/api/chat/message', async (req, res) => {
       { role: 'user', content: userMessage }
     ];
 
-    const aiResponse = await callSpark(messages, systemPrompt);
+    const aiResponse = await callDoubao(messages, systemPrompt);
     
     // 判断是否进入下一阶段（简化逻辑）
     let nextPhase = phase;
@@ -274,7 +274,7 @@ app.post('/api/quiz/generate', async (req, res) => {
       { role: 'user', content: '请生成题目' }
     ];
 
-    const aiResponse = await callSpark(messages, systemPrompt);
+    const aiResponse = await callDoubao(messages, systemPrompt);
     
     // 解析JSON题目
     let quizzes = [];
@@ -327,7 +327,7 @@ app.post('/api/roleplay/start', async (req, res) => {
       { role: 'user', content: `你好！我是小读者，我要扮演"${character}"，请开始角色扮演互动。` }
     ];
 
-    const aiResponse = await callSpark(messages, systemPrompt);
+    const aiResponse = await callDoubao(messages, systemPrompt);
     
     res.json({ 
       success: true, 
@@ -363,7 +363,7 @@ app.post('/api/roleplay/message', async (req, res) => {
       { role: 'user', content: userMessage }
     ];
 
-    const aiResponse = await callSpark(messages, systemPrompt);
+    const aiResponse = await callDoubao(messages, systemPrompt);
     
     res.json({ 
       success: true, 
@@ -395,7 +395,7 @@ app.post('/api/summary', async (req, res) => {
       { role: 'user', content: `孩子说这个故事的主旨是："${userSummary}"，请给予评价和鼓励，并补充这个故事想要传达的道理。` }
     ];
 
-    const aiResponse = await callSpark(messages, systemPrompt);
+    const aiResponse = await callDoubao(messages, systemPrompt);
     
     res.json({ 
       success: true, 
@@ -528,7 +528,7 @@ app.post('/api/upload/start-reading', async (req, res) => {
       { role: 'user', content: `孩子通过拍照上传了一本书《${bookData.title || '他今天读的书'}》，请用亲切的语气和孩子打招呼，告诉他你已经收到了他拍的照片，并引导他开始分享今天读的内容。` }
     ];
 
-    const aiResponse = await callSpark(messages, systemPrompt);
+    const aiResponse = await callDoubao(messages, systemPrompt);
 
     res.json({
       success: true,
@@ -568,7 +568,7 @@ app.post('/api/upload/message', async (req, res) => {
       { role: 'user', content: userMessage }
     ];
 
-    const aiResponse = await callSpark(messages, systemPrompt);
+    const aiResponse = await callDoubao(messages, systemPrompt);
 
     // 判断是否进入下一阶段
     let nextPhase = phase;
@@ -710,7 +710,7 @@ app.get('/api/health', (req, res) => {
   res.json({ 
     success: true, 
     message: '小书童AI阅读服务运行正常',
-    sparkApi: '已配置'
+    doubaoApi: process.env.DOUBAO_API_KEY ? '已配置' : '未配置'
   });
 });
 

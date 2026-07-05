@@ -64,7 +64,7 @@
       </view>
       <!-- AI状态指示 -->
       <view class="ai-status {{isOnline ? 'online' : 'offline'}}">
-        {{isOnline ? '🤖 星火AI' : '📖 本地'}}
+        {{isOnline ? '🤖 豆包AI' : '📖 本地'}}
       </view>
     </view>
 

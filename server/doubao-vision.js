@@ -1,15 +1,65 @@
 const https = require('https');
+const http = require('http');
 const fs = require('fs');
 
-const DOUBAO_API_KEY = process.env.DOUBAO_API_KEY;
-const DOUBAO_MODEL = process.env.DOUBAO_MODEL || 'doubao-seed-1-8-vision-250615';
-const DOUBAO_BASE_URL = process.env.DOUBAO_BASE_URL || 'https://ark.cn-beijing.volces.com/api/v3';
+const DOUBAO_VISION_API_KEY = process.env.DOUBAO_VISION_API_KEY || process.env.DOUBAO_API_KEY;
+const DOUBAO_VISION_MODEL = process.env.DOUBAO_VISION_MODEL || process.env.DOUBAO_MODEL || 'doubao-seed-1-8-vision-250615';
+const DOUBAO_VISION_BASE_URL = process.env.DOUBAO_VISION_BASE_URL || process.env.DOUBAO_BASE_URL || 'https://ark.cn-beijing.volces.com/api/v3';
+const HTTPS_PROXY = process.env.HTTPS_PROXY || process.env.https_proxy || '';
+
+function makeHttpsRequest(requestOptions, payload) {
+  return new Promise((resolve, reject) => {
+    if (HTTPS_PROXY) {
+      const proxyUrl = new URL(HTTPS_PROXY);
+      const proxyOptions = {
+        hostname: proxyUrl.hostname,
+        port: proxyUrl.port || 80,
+        method: 'CONNECT',
+        path: requestOptions.hostname + ':' + (requestOptions.port || 443)
+      };
+
+      const proxyReq = http.request(proxyOptions);
+      proxyReq.on('connect', (res, socket) => {
+        if (res.statusCode !== 200) {
+          reject(new Error('代理连接失败: ' + res.statusCode));
+          return;
+        }
+
+        const httpsOptions = {
+          ...requestOptions,
+          socket: socket,
+          agent: false
+        };
+
+        const req = https.request(httpsOptions, (response) => {
+          let data = '';
+          response.on('data', (chunk) => { data += chunk; });
+          response.on('end', () => resolve({ statusCode: response.statusCode, data }));
+        });
+        req.on('error', reject);
+        req.write(payload);
+        req.end();
+      });
+      proxyReq.on('error', reject);
+      proxyReq.end();
+    } else {
+      const req = https.request(requestOptions, (response) => {
+        let data = '';
+        response.on('data', (chunk) => { data += chunk; });
+        response.on('end', () => resolve({ statusCode: response.statusCode, data }));
+      });
+      req.on('error', reject);
+      req.write(payload);
+      req.end();
+    }
+  });
+}
 
 function callDoubaoVision(messages, temperature = 0.3) {
   return new Promise((resolve, reject) => {
-    const url = new URL(DOUBAO_BASE_URL + '/chat/completions');
+    const url = new URL(DOUBAO_VISION_BASE_URL + '/chat/completions');
     const payload = JSON.stringify({
-      model: DOUBAO_MODEL,
+      model: DOUBAO_VISION_MODEL,
       messages: messages,
       temperature: temperature,
       max_tokens: 2048
@@ -22,14 +72,13 @@ function callDoubaoVision(messages, temperature = 0.3) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + DOUBAO_API_KEY
+        'Authorization': 'Bearer ' + DOUBAO_VISION_API_KEY,
+        'Content-Length': Buffer.byteLength(payload)
       }
     };
 
-    const req = https.request(options, (res) => {
-      let data = '';
-      res.on('data', (chunk) => { data += chunk; });
-      res.on('end', () => {
+    makeHttpsRequest(options, payload)
+      .then(({ statusCode, data }) => {
         try {
           const result = JSON.parse(data);
           if (result.choices && result.choices.length > 0) {
@@ -42,12 +91,8 @@ function callDoubaoVision(messages, temperature = 0.3) {
         } catch (err) {
           reject(err);
         }
-      });
-    });
-
-    req.on('error', reject);
-    req.write(payload);
-    req.end();
+      })
+      .catch(reject);
   });
 }
 

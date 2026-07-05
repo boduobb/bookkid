@@ -1,4 +1,4 @@
-// pages/reading/reading.js - 对接星火大模型的阅读互动页
+// pages/reading/reading.js - 对接豆包大模型的阅读互动页
 const app = getApp();
 const util = require('../../utils/util.js');
 const api = require('../../utils/api.js');
@@ -47,7 +47,7 @@ Page({
     try {
       await api.checkHealth();
       this.setData({ isOnline: true });
-      console.log('后端服务可用，将使用星火大模型');
+      console.log('后端服务可用，将使用豆包大模型');
     } catch (err) {
       console.log('后端服务不可用，将使用本地Mock数据:', err.message);
       this.setData({ isOnline: false });
@@ -70,7 +70,7 @@ Page({
   async startReadingFlow() {
     const { book, isOnline } = this.data;
     
-    // 如果后端可用，调用星火API
+    // 如果后端可用，调用豆包API
     if (isOnline) {
       try {
         this.setData({ isThinking: true });
@@ -98,7 +98,7 @@ Page({
         }, 1500);
         
       } catch (err) {
-        console.error('调用星火API失败:', err);
+        console.error('调用豆包API失败:', err);
         wx.showToast({ title: 'AI连接失败，使用本地模式', icon: 'none' });
         this.setData({ isOnline: false, isThinking: false });
         this.startLocalFlow();
@@ -247,7 +247,7 @@ Page({
         }
         
       } catch (err) {
-        console.error('调用星火API失败:', err);
+        console.error('调用豆包API失败:', err);
         this.setData({ isThinking: false });
         this.handleLocalMessage(userMessage);
       }
