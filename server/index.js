@@ -204,7 +204,7 @@ app.post('/api/chat/start', async (req, res) => {
 });
 
 /**
- * 阅读对话 - 孩子发送消息，AI回复
+ * 阅读对话 - 孩子发送消息，AI回复（支持分层提问）
  * POST /api/chat/message
  * body: { bookId, userMessage, history, phase }
  */
@@ -217,7 +217,17 @@ app.post('/api/chat/message', async (req, res) => {
       return res.json({ success: false, message: '书籍不存在' });
     }
 
-    const systemPrompt = buildSystemPromptFromConfig(loadConfig(), book);
+    const agentConfig = loadConfig();
+    let systemPrompt = buildSystemPromptFromConfig(agentConfig, book);
+    
+    // 根据阶段添加分层提问引导
+    const questionLevels = {
+      retelling: '【当前阶段：复述引导】请引导孩子用自己的话复述故事内容，可以问简单的事实性问题（谁、什么、在哪里）',
+      comprehension: '【当前阶段：主旨理解】请帮助孩子理解故事的中心思想，可以问中等难度的因果关系问题（为什么、怎么样）',
+      deep: '【当前阶段：深度思考】请引导孩子进行深度思考，可以问进阶问题（故事告诉我们什么道理、联系生活实际）'
+    };
+    
+    systemPrompt += '\n\n' + (questionLevels[phase] || questionLevels.retelling);
     
     // 构建对话历史
     const messages = [
@@ -227,17 +237,27 @@ app.post('/api/chat/message', async (req, res) => {
 
     const aiResponse = await callDoubao(messages, systemPrompt);
     
-    // 判断是否进入下一阶段（简化逻辑）
+    // 判断是否进入下一阶段（根据对话深度）
     let nextPhase = phase;
     let phaseChange = false;
+    let questionLevel = 1;
     
-    // 如果对话次数足够，建议进入下一阶段
-    if (phase === 'retelling' && history.length >= 4) {
-      nextPhase = 'comprehension';
-      phaseChange = true;
-    } else if (phase === 'comprehension' && history.length >= 6) {
-      nextPhase = 'quiz';
-      phaseChange = true;
+    // 根据对话次数和阶段调整提问层次
+    const totalMessages = history.length + 1;
+    if (phase === 'retelling') {
+      questionLevel = totalMessages <= 2 ? 1 : (totalMessages <= 4 ? 2 : 3);
+      if (totalMessages >= 5) {
+        nextPhase = 'comprehension';
+        phaseChange = true;
+      }
+    } else if (phase === 'comprehension') {
+      questionLevel = totalMessages <= 3 ? 2 : 3;
+      if (totalMessages >= 7) {
+        nextPhase = 'deep';
+        phaseChange = true;
+      }
+    } else {
+      questionLevel = 3;
     }
 
     res.json({ 
@@ -245,7 +265,8 @@ app.post('/api/chat/message', async (req, res) => {
       data: {
         message: aiResponse,
         phase: nextPhase,
-        phaseChange
+        phaseChange,
+        questionLevel
       }
     });
   } catch (err) {
@@ -547,7 +568,7 @@ app.post('/api/upload/start-reading', async (req, res) => {
 });
 
 /**
- * 拍照阅读对话 - 孩子发送消息，AI回复
+ * 拍照阅读对话 - 孩子发送消息，AI回复（支持分层提问）
  * POST /api/upload/message
  * body: { bookData, userMessage, history, phase, ocrText }
  */
@@ -560,7 +581,16 @@ app.post('/api/upload/message', async (req, res) => {
     }
 
     const agentConfig = loadConfig();
-    const systemPrompt = buildSystemPromptFromConfig(agentConfig, bookData, ocrText || bookData.content);
+    let systemPrompt = buildSystemPromptFromConfig(agentConfig, bookData, ocrText || bookData.content);
+
+    // 根据阶段添加分层提问引导
+    const questionLevels = {
+      retelling: '【当前阶段：复述引导】请引导孩子用自己的话复述故事内容，可以问简单的事实性问题（谁、什么、在哪里）',
+      comprehension: '【当前阶段：主旨理解】请帮助孩子理解故事的中心思想，可以问中等难度的因果关系问题（为什么、怎么样）',
+      deep: '【当前阶段：深度思考】请引导孩子进行深度思考，可以问进阶问题（故事告诉我们什么道理、联系生活实际）'
+    };
+    
+    systemPrompt += '\n\n' + (questionLevels[phase] || questionLevels.retelling);
 
     // 构建对话历史
     const messages = [
@@ -570,16 +600,26 @@ app.post('/api/upload/message', async (req, res) => {
 
     const aiResponse = await callDoubao(messages, systemPrompt);
 
-    // 判断是否进入下一阶段
+    // 判断是否进入下一阶段（根据对话深度）
     let nextPhase = phase;
     let phaseChange = false;
+    let questionLevel = 1;
 
-    if (phase === 'retelling' && history.length >= 4) {
-      nextPhase = 'comprehension';
-      phaseChange = true;
-    } else if (phase === 'comprehension' && history.length >= 6) {
-      nextPhase = 'quiz';
-      phaseChange = true;
+    const totalMessages = history.length + 1;
+    if (phase === 'retelling') {
+      questionLevel = totalMessages <= 2 ? 1 : (totalMessages <= 4 ? 2 : 3);
+      if (totalMessages >= 5) {
+        nextPhase = 'comprehension';
+        phaseChange = true;
+      }
+    } else if (phase === 'comprehension') {
+      questionLevel = totalMessages <= 3 ? 2 : 3;
+      if (totalMessages >= 7) {
+        nextPhase = 'deep';
+        phaseChange = true;
+      }
+    } else {
+      questionLevel = 3;
     }
 
     res.json({
@@ -587,7 +627,8 @@ app.post('/api/upload/message', async (req, res) => {
       data: {
         message: aiResponse,
         phase: nextPhase,
-        phaseChange
+        phaseChange,
+        questionLevel
       }
     });
 
