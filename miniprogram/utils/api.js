@@ -1,10 +1,13 @@
 // miniprogram/utils/api.js - 后端API请求模块
 
-// 后端服务地址（正式环境 - HTTPS）
-// 域名：bookkid.cloud
-const API_BASE_URL = 'https://bookkid.cloud';
+// 后端服务地址（开发调试 - 使用服务器IP，域名备案完成后改回HTTPS）
+// 服务器IP：82.157.133.67（腾讯云）
+const API_BASE_URL = 'http://82.157.133.67:3000';
 
-// ===== 开发环境配置（取消注释使用）=====
+// ===== 正式环境配置（域名备案完成后使用）=====
+// const API_BASE_URL = 'https://bookkid.cloud';
+
+// ===== 其他开发配置 =====
 // const API_BASE_URL = 'http://localhost:3000';
 // const API_BASE_URL = 'http://192.168.1.100:3000'; // 局域网IP（真机调试）
 
