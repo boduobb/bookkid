@@ -3,7 +3,7 @@ const crypto = require('crypto');
 
 const DOUBAO_TTS_API_KEY = process.env.DOUBAO_TTS_API_KEY || process.env.DOUBAO_API_KEY;
 const DOUBAO_TTS_RESOURCE_ID = process.env.DOUBAO_TTS_RESOURCE_ID || 'seed-tts-2.0';
-const DOUBAO_TTS_SPEAKER = process.env.DOUBAO_TTS_SPEAKER || 'zh_female_vv_jupiter_bigtts';
+const DOUBAO_TTS_SPEAKER = process.env.DOUBAO_TTS_SPEAKER || 'zh_female_xiaoyu';
 const TTS_URL = 'https://openspeech.bytedance.com/api/v3/tts/unidirectional';
 
 function synthesizeSpeech(text) {
