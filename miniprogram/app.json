@@ -41,10 +41,5 @@
   },
   "style": "v2",
   "sitemapLocation": "sitemap.json",
-  "lazyCodeLoading": "requiredComponents",
-  "permission": {
-    "scope.record": {
-      "desc": "用于语音输入，让孩子可以按住说话与AI对话"
-    }
-  }
+  "lazyCodeLoading": "requiredComponents"
 }
