@@ -650,10 +650,17 @@ Page({
   goToUpload() {
     wx.chooseImage({
       count: 9,
-      sizeType: ['compressed'],
+      sizeType: ['compressed', 'original'],
       sourceType: ['album', 'camera'],
       success: (res) => {
+        console.log('选择图片成功，数量:', res.tempFilePaths.length);
+        console.log('图片路径:', res.tempFilePaths);
         const tempFilePaths = res.tempFilePaths;
+        
+        if (tempFilePaths.length < 1) {
+          wx.showToast({ title: '请至少选择一张图片', icon: 'none' });
+          return;
+        }
         
         this.setData({
           uploadImages: tempFilePaths,
@@ -675,6 +682,7 @@ Page({
       },
       fail: (err) => {
         console.log('选择图片失败:', err);
+        wx.showToast({ title: '选择失败: ' + err.errMsg, icon: 'none' });
       }
     });
   },
