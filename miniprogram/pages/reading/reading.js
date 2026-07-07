@@ -648,14 +648,12 @@ Page({
   },
 
   goToUpload() {
-    wx.chooseMedia({
+    wx.chooseImage({
       count: 9,
-      mediaType: ['image'],
-      sourceType: ['camera', 'album'],
       sizeType: ['compressed'],
+      sourceType: ['album', 'camera'],
       success: (res) => {
-        const tempFiles = res.tempFiles;
-        const tempFilePaths = tempFiles.map(f => f.tempFilePath);
+        const tempFilePaths = res.tempFilePaths;
         
         this.setData({
           uploadImages: tempFilePaths,
