@@ -4,7 +4,7 @@ const crypto = require('crypto');
 
 const DOUBAO_ASR_API_KEY = process.env.DOUBAO_ASR_API_KEY || process.env.DOUBAO_API_KEY;
 const DOUBAO_ASR_RESOURCE_ID = process.env.DOUBAO_ASR_RESOURCE_ID || 'volc.bigasr.sauc.duration';
-const ASR_URL = 'wss://openspeech.bytedance.com/api/v3/sauc/bigmodel';
+const ASR_URL = 'wss://openspeech.bytedance.com/api/v3/sauc/bigmodel_nostream';
 
 const PROTOCOL_VERSION = 0b0001;
 const HEADER_SIZE = 0b0001;
@@ -46,16 +46,26 @@ function buildFullClientRequest(config) {
   return Buffer.concat([header, payloadSize, payload]);
 }
 
-function buildAudioOnlyRequest(audioData, isLast) {
+function buildAudioOnlyRequest(audioData, isLast, sequence) {
+  const hasSequence = !isLast;
+  const flags = isLast ? NEG_SEQUENCE_LAST : POS_SEQUENCE;
   const header = buildHeader(
     MESSAGE_TYPE_AUDIO_ONLY_REQUEST,
-    isLast ? NEG_SEQUENCE_LAST : POS_SEQUENCE,
+    flags,
     SERIALIZE_METHOD_RAW,
     NO_COMPRESSION
   );
+  const parts = [header];
+  if (hasSequence) {
+    const seqBuf = Buffer.alloc(4);
+    seqBuf.writeUInt32BE(sequence, 0);
+    parts.push(seqBuf);
+  }
   const payloadSize = Buffer.alloc(4);
   payloadSize.writeUInt32BE(audioData.length, 0);
-  return Buffer.concat([header, payloadSize, audioData]);
+  parts.push(payloadSize);
+  parts.push(audioData);
+  return Buffer.concat(parts);
 }
 
 function parseServerResponse(data) {
@@ -66,13 +76,20 @@ function parseServerResponse(data) {
   const serialization = (header[2] >> 4) & 0x0F;
   const compression = header[2] & 0x0F;
 
+  let offset = 4;
+
   if (messageType === MESSAGE_TYPE_ERROR) {
-    const payload = data.slice(8).toString('utf8');
-    return { type: 'error', message: payload };
+    const payloadSize = data.readUInt32BE(offset);
+    offset += 4;
+    const payload = data.slice(offset, offset + payloadSize);
+    return { type: 'error', message: payload.toString('utf8') };
   }
 
-  const payloadSize = data.readUInt32BE(4);
-  const payload = data.slice(8, 8 + payloadSize);
+  const isLast = (messageTypeSpecificFlags & 0x02) !== 0;
+
+  const payloadSize = data.readUInt32BE(offset);
+  offset += 4;
+  const payload = data.slice(offset, offset + payloadSize);
 
   let result;
   if (serialization === SERIALIZE_METHOD_JSON) {
@@ -87,7 +104,7 @@ function parseServerResponse(data) {
 
   return {
     type: messageType === MESSAGE_TYPE_FULL_SERVER_RESPONSE ? 'response' : 'other',
-    isLast: (messageTypeSpecificFlags & 0x02) !== 0,
+    isLast: isLast,
     data: result
   };
 }
@@ -109,31 +126,39 @@ function recognizeAudio(audioPath) {
     let resolved = false;
 
     ws.on('open', () => {
+      console.log('ASR WebSocket连接成功');
       const config = {
         user: { uid: 'xiaoshutong-' + Date.now() },
         audio: {
-          format: 'pcm',
-          sample_rate: 16000,
-          channel: 1
+          format: 'mp3',
+          rate: 16000,
+          channel: 1,
+          codec: 'mp3'
         },
         request: {
-          model: 'bigmodel'
+          model_name: 'bigmodel',
+          enable_itn: true,
+          enable_punc: true
         }
       };
 
+      console.log('ASR发送配置:', JSON.stringify(config));
       ws.send(buildFullClientRequest(config));
 
       const chunkSize = 3200;
       let offset = 0;
+      let seq = 2;
       const totalLength = audioBuffer.length;
       const sendNext = () => {
         if (offset >= totalLength) {
+          console.log('ASR发送最后一包');
           ws.send(buildAudioOnlyRequest(Buffer.alloc(0), true));
           return;
         }
         const end = Math.min(offset + chunkSize, totalLength);
         const chunk = audioBuffer.slice(offset, end);
-        ws.send(buildAudioOnlyRequest(chunk, false));
+        ws.send(buildAudioOnlyRequest(chunk, false, seq));
+        seq++;
         offset = end;
         setTimeout(sendNext, 100);
       };
@@ -141,7 +166,9 @@ function recognizeAudio(audioPath) {
     });
 
     ws.on('message', (data) => {
+      console.log('ASR收到消息，长度:', data.length);
       const resp = parseServerResponse(data);
+      console.log('ASR解析结果:', JSON.stringify(resp).substring(0, 500));
       if (!resp) return;
 
       if (resp.type === 'error') {
@@ -173,10 +200,15 @@ function recognizeAudio(audioPath) {
     });
 
     ws.on('error', (err) => {
+      console.log('ASR WebSocket错误:', err.message);
       if (!resolved) {
         resolved = true;
         reject(err);
       }
+    });
+
+    ws.on('close', (code, reason) => {
+      console.log('ASR WebSocket关闭, code:', code, 'reason:', reason?.toString());
     });
 
     setTimeout(() => {

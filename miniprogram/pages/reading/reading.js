@@ -22,6 +22,7 @@ Page({
     retellingCount: 0,
     isThinking: false,
     isOnline: false,
+    autoPlayVoice: true,
     roleplayHistory: [],
     // 拍照上传相关
     uploadImages: [],
@@ -91,7 +92,11 @@ Page({
           isThinking: false,
           chatHistory: [{ role: 'assistant', content: result.message }]
         });
-        
+
+        if (this.data.autoPlayVoice) {
+          this.playText(result.message);
+        }
+
         // 发送故事内容
         setTimeout(() => {
           this.sendStoryContent();
@@ -164,7 +169,7 @@ Page({
 
   addAIMessage(content, type = 'text') {
     this.setData({ isThinking: true });
-    
+
     setTimeout(() => {
       const msg = {
         id: Date.now(),
@@ -172,13 +177,17 @@ Page({
         role: 'ai',
         content
       };
-      
+
       const messages = [...this.data.messages, msg];
       this.setData({
         messages,
         isThinking: false,
         scrollToView: 'msg-' + msg.id
       });
+
+      if (this.data.autoPlayVoice && type === 'text') {
+        this.playText(content);
+      }
     }, 800);
   },
 
@@ -239,6 +248,10 @@ Page({
           scrollToView: 'msg-' + aiMsg.id,
           phase: result.phase
         });
+        
+        if (this.data.autoPlayVoice) {
+          this.playText(result.message);
+        }
         
         if (result.phaseChange) {
           if (result.phase === 'quiz') {
@@ -453,6 +466,10 @@ Page({
           isThinking: false,
           scrollToView: 'msg-' + aiMsg.id
         });
+        
+        if (this.data.autoPlayVoice) {
+          this.playText(result.message);
+        }
       } catch (err) {
         console.error('角色扮演失败:', err);
         this.setData({ isThinking: false });
@@ -489,6 +506,10 @@ Page({
           isThinking: false,
           scrollToView: 'msg-' + aiMsg.id
         });
+        
+        if (this.data.autoPlayVoice) {
+          this.playText(result.message);
+        }
       } catch (err) {
         console.error('角色扮演对话失败:', err);
         this.setData({ isThinking: false });
@@ -539,7 +560,7 @@ Page({
       sampleRate: 16000,
       numberOfChannels: 1,
       encodeBitRate: 48000,
-      format: 'pcm'
+      format: 'mp3'
     });
   },
 
@@ -573,9 +594,23 @@ Page({
     }
   },
 
+  // 切换自动朗读
+  onToggleAutoPlay(e) {
+    this.setData({ autoPlayVoice: e.detail.value });
+    if (!e.detail.value && this.innerAudioContext) {
+      this.innerAudioContext.stop();
+    }
+  },
+
   // 播放AI消息的语音
   async onPlayMessageVoice(e) {
     const text = e.currentTarget.dataset.text;
+    if (!text) return;
+    await this.playText(text);
+  },
+
+  // 播放文字语音（公共方法）
+  async playText(text) {
     if (!text) return;
 
     wx.showLoading({ title: '语音合成中...' });

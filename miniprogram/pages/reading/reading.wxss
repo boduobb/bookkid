@@ -241,10 +241,36 @@
   color: #D97706;
 }
 
+/* 自动朗读开关栏 */
+.auto-play-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12rpx 32rpx;
+  background: #FFFBE6;
+  border-bottom: 2rpx solid #F3F4F6;
+}
+
+.auto-play-left {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.auto-play-icon {
+  font-size: 32rpx;
+}
+
+.auto-play-label {
+  font-size: 28rpx;
+  color: #6B7280;
+}
+
 /* 消息列表 */
 .messages-container {
   flex: 1;
-  padding: 24rpx;
+  height: 0;
+  padding: 24rpx 24rpx 140rpx 24rpx;
   box-sizing: border-box;
 }
 
@@ -252,7 +278,7 @@
   display: flex;
   flex-direction: column;
   gap: 24rpx;
-  padding-bottom: 180rpx;
+  padding-bottom: 40rpx;
 }
 
 .message-item {

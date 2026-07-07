@@ -68,6 +68,15 @@
       </view>
     </view>
 
+    <!-- 自动朗读开关 -->
+    <view class="auto-play-bar">
+      <view class="auto-play-left">
+        <text class="auto-play-icon">📢</text>
+        <text class="auto-play-label">自动朗读</text>
+      </view>
+      <switch checked="{{autoPlayVoice}}" bindchange="onToggleAutoPlay" color="#10B981"/>
+    </view>
+
     <!-- 消息列表 -->
     <scroll-view 
       class="messages-container" 
