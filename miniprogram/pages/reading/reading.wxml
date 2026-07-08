@@ -4,7 +4,32 @@
   <view class="upload-section" wx:if="{{phase === 'upload'}}">
     <view class="upload-mascot bounce">🦉</view>
     <view class="upload-title">嗨！我是小书童书书</view>
-    <view class="upload-desc">今天想读什么书呢？拍照上传或者从书架选一本吧！</view>
+    <view class="upload-desc">今天想读什么书呢？输入书名、拍照上传或者从书架选一本吧！</view>
+    
+    <!-- 书名输入 -->
+    <view class="book-input-section">
+      <view class="book-input-wrapper">
+        <input 
+          class="book-input" 
+          placeholder="输入书名，AI帮你讲故事" 
+          value="{{bookTitleInput}}"
+          bindinput="onBookTitleInput"
+          confirm-type="search"
+          bindconfirm="onPredictBook"
+        />
+        <view class="predict-btn {{bookTitleInput ? 'active' : ''}}" bindtap="onPredictBook">
+          <text class="predict-icon">✨</text>
+          <text class="predict-text">AI猜书</text>
+        </view>
+      </view>
+      <view class="predict-hint" wx:if="{{isPredicting}}">书书正在努力回忆这本书...</view>
+    </view>
+
+    <view class="divider">
+      <view class="divider-line"></view>
+      <view class="divider-text">或者</view>
+      <view class="divider-line"></view>
+    </view>
     
     <view class="upload-actions">
       <view class="upload-btn primary" bindtap="goToUpload">

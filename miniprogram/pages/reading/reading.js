@@ -29,7 +29,11 @@ Page({
     isUploading: false,
     uploadProgress: 0,
     isFromUpload: false,
-    ocrText: ''
+    ocrText: '',
+    // 书名输入相关
+    bookTitleInput: '',
+    isPredicting: false,
+    isFromPredict: false
   },
 
   onLoad(options) {
@@ -645,6 +649,121 @@ Page({
 
   onPlayVoice() {
     // 兼容旧代码
+  },
+
+  onBookTitleInput(e) {
+    this.setData({ bookTitleInput: e.detail.value });
+  },
+
+  async onPredictBook() {
+    const { bookTitleInput, isOnline, isPredicting } = this.data;
+    
+    if (!bookTitleInput || bookTitleInput.trim().length === 0) {
+      wx.showToast({ title: '请输入书名', icon: 'none' });
+      return;
+    }
+    
+    if (isPredicting) return;
+    
+    if (!isOnline) {
+      wx.showToast({ title: 'AI服务未连接', icon: 'none' });
+      return;
+    }
+
+    this.setData({ isPredicting: true });
+    wx.showLoading({ title: 'AI猜书中...' });
+
+    try {
+      const bookData = await api.predictBook(bookTitleInput.trim());
+      
+      wx.hideLoading();
+      wx.showToast({
+        title: `找到啦：${bookData.title}`,
+        icon: 'none'
+      });
+
+      this.setData({
+        book: bookData,
+        bookId: 'predict_' + Date.now(),
+        isFromPredict: true,
+        isFromUpload: true,
+        ocrText: bookData.content,
+        phase: 'loading',
+        isPredicting: false,
+        bookTitleInput: ''
+      });
+
+      this.startPredictReadingFlow(bookData);
+
+    } catch (err) {
+      console.error('预判书籍失败:', err);
+      wx.hideLoading();
+      wx.showToast({
+        title: err.message || '猜书失败，请重试',
+        icon: 'none'
+      });
+      this.setData({ isPredicting: false });
+    }
+  },
+
+  async startPredictReadingFlow(bookData) {
+    try {
+      this.setData({ isThinking: true });
+
+      const result = await api.startUploadReading(bookData, bookData.content);
+
+      const welcomeMsg = {
+        id: Date.now(),
+        type: 'text',
+        role: 'ai',
+        content: result.message
+      };
+
+      this.setData({
+        messages: [welcomeMsg],
+        phase: 'reading',
+        scrollToView: 'msg-' + welcomeMsg.id,
+        isThinking: false,
+        chatHistory: [{ role: 'assistant', content: result.message }]
+      });
+
+      if (this.data.autoPlayVoice) {
+        this.playText(result.message);
+      }
+
+      setTimeout(() => {
+        this.showPredictStoryContent(bookData);
+      }, 1500);
+
+    } catch (err) {
+      console.error('开始阅读失败:', err);
+      this.setData({ isThinking: false });
+      wx.showToast({ title: 'AI连接失败', icon: 'none' });
+    }
+  },
+
+  showPredictStoryContent(bookData) {
+    const storyMsg = {
+      id: Date.now() + 1,
+      type: 'story',
+      role: 'ai',
+      content: bookData.content
+    };
+    
+    const messages = [...this.data.messages, storyMsg];
+    this.setData({
+      messages,
+      scrollToView: 'msg-' + storyMsg.id,
+      phase: 'retelling'
+    });
+    
+    setTimeout(() => {
+      const guideText = bookData.readingGuide || '好啦，故事讲完了！你能用自己的话给书书讲讲这个故事吗？😊';
+      this.addAIMessage(guideText);
+      this.setData({
+        chatHistory: [...this.data.chatHistory, { role: 'assistant', content: guideText }]
+      });
+    }, 2000);
   },
 
   goToUpload() {

@@ -167,6 +167,75 @@ app.get('/api/books/:id', (req, res) => {
 });
 
 /**
+ * 根据书名预判书籍内容
+ * POST /api/book/predict
+ * body: { title }
+ */
+app.post('/api/book/predict', async (req, res) => {
+  try {
+    const { title } = req.body;
+
+    if (!title || title.trim().length === 0) {
+      return res.json({ success: false, message: '请输入书名' });
+    }
+
+    console.log('预判书籍内容:', title);
+
+    const systemPrompt = `你是一位儿童文学专家，非常熟悉各类儿童绘本和童话故事。请根据书名预判这本书的内容，并用亲切活泼的语气描述。
+
+请严格按照以下JSON格式返回（不要添加任何其他文字）：
+{
+  "title": "书名",
+  "author": "作者（不知道就写'经典童话'）",
+  "cover": "一个代表这本书的emoji",
+  "category": "绘本故事/寓言故事/科普故事/历史故事/传统美德",
+  "color": "一个温暖的十六进制颜色，如 #FFE4E1",
+  "summary": "100字以内的故事简介，适合孩子听",
+  "content": "完整的故事内容，300-500字左右，语言生动有趣",
+  "characters": ["角色1", "角色2", "角色3"],
+  "readingGuide": "引导孩子继续阅读的话术，亲切自然，激发孩子兴趣"
+}`;
+
+    const messages = [
+      { role: 'user', content: `请预判《${title}》这本书的内容` }
+    ];
+
+    const aiResponse = await callDoubao(messages, systemPrompt, { temperature: 0.7, max_tokens: 1024 });
+
+    let bookData = null;
+    try {
+      let cleanResponse = aiResponse.trim();
+      if (cleanResponse.startsWith('```')) {
+        cleanResponse = cleanResponse.replace(/```json?/g, '').replace(/```/g, '').trim();
+      }
+      bookData = JSON.parse(cleanResponse);
+    } catch (parseErr) {
+      console.error('解析预判结果失败:', parseErr, aiResponse);
+      bookData = {
+        title: title,
+        author: '经典童话',
+        cover: '📖',
+        category: '绘本故事',
+        color: '#FFE4E1',
+        summary: '一本有趣的儿童读物',
+        content: aiResponse,
+        characters: ['故事中的角色'],
+        readingGuide: '这本书里藏着好多有趣的秘密呢！快和书书一起去发现吧～'
+      };
+    }
+
+    res.json({
+      success: true,
+      data: bookData
+    });
+
+  } catch (err) {
+    console.error('预判书籍内容错误:', err);
+    res.json({ success: false, message: err.message || '预判失败' });
+  }
+});
+
+/**
  * 开始阅读对话 - AI引导复述
  * POST /api/chat/start
  * body: { bookId }

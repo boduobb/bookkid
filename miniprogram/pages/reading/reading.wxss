@@ -33,8 +33,80 @@
   font-size: 28rpx;
   color: #6B7280;
   text-align: center;
-  margin-bottom: 60rpx;
+  margin-bottom: 40rpx;
   line-height: 1.6;
+}
+
+/* 书名输入 */
+.book-input-section {
+  width: 100%;
+  margin-bottom: 30rpx;
+}
+
+.book-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 8rpx 8rpx 8rpx 28rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.06);
+  border: 2rpx solid #E5E7EB;
+}
+
+.book-input {
+  flex: 1;
+  height: 72rpx;
+  font-size: 28rpx;
+  color: #1F2937;
+}
+
+.predict-btn {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 28rpx;
+  border-radius: 18rpx;
+  background: #F3F4F6;
+  color: #9CA3AF;
+  font-size: 26rpx;
+  transition: all 0.3s;
+}
+
+.predict-btn.active {
+  background: linear-gradient(135deg, #A78BFA 0%, #8B5CF6 100%);
+  color: #fff;
+  box-shadow: 0 8rpx 20rpx rgba(139, 92, 246, 0.3);
+}
+
+.predict-icon {
+  font-size: 28rpx;
+  margin-right: 8rpx;
+}
+
+.predict-hint {
+  text-align: center;
+  font-size: 24rpx;
+  color: #8B5CF6;
+  margin-top: 16rpx;
+}
+
+/* 分隔线 */
+.divider {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin: 20rpx 0 30rpx 0;
+}
+
+.divider-line {
+  flex: 1;
+  height: 2rpx;
+  background: #E5E7EB;
+}
+
+.divider-text {
+  padding: 0 24rpx;
+  font-size: 24rpx;
+  color: #9CA3AF;
 }
 
 .upload-actions {

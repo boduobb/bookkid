@@ -111,6 +111,14 @@ function checkHealth() {
 }
 
 /**
+ * 根据书名预判书籍内容
+ * @param {string} title - 书名
+ */
+function predictBook(title) {
+  return request('/api/book/predict', 'POST', { title });
+}
+
+/**
  * 批量上传图片并识别
  * @param {Array} tempFilePaths - 临时图片路径数组
  * @returns {Promise} 识别结果
@@ -252,6 +260,7 @@ module.exports = {
   roleplayMessage,
   getSummary,
   checkHealth,
+  predictBook,
   uploadAndRecognize,
   startUploadReading,
   sendUploadMessage,
