@@ -99,6 +99,11 @@ function callDoubaoVision(messages, temperature = 0.3) {
 async function recognizeText(imagePath) {
   const imageBuffer = fs.readFileSync(imagePath);
   const imageBase64 = imageBuffer.toString('base64');
+  return recognizeTextFromBase64(imageBase64);
+}
+
+async function recognizeTextFromBase64(imageBase64) {
+  const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
 
   const messages = [
     {
@@ -106,7 +111,7 @@ async function recognizeText(imagePath) {
       content: [
         {
           type: 'image_url',
-          image_url: { url: 'data:image/jpeg;base64,' + imageBase64 }
+          image_url: { url: 'data:image/jpeg;base64,' + base64Data }
         },
         {
           type: 'text',
@@ -182,6 +187,21 @@ async function recognizeMultipleImages(imagePaths) {
   return results.join('\n\n===== 第 ' + results.indexOf(results[results.length - 1]) + ' 页 =====\n\n');
 }
 
+async function recognizeMultipleBase64(base64Images) {
+  const results = [];
+  for (let i = 0; i < base64Images.length; i++) {
+    const base64Data = base64Images[i];
+    try {
+      console.log(`正在识别第 ${i + 1}/${base64Images.length} 张图片...`);
+      const text = await recognizeTextFromBase64(base64Data);
+      if (text && text.trim().length > 0) results.push(text);
+    } catch (err) {
+      console.error('识别图片失败:', i + 1, err.message);
+    }
+  }
+  return results.join('\n\n===== 第 ' + results.indexOf(results[results.length - 1]) + ' 页 =====\n\n');
+}
+
 async function analyzeMultipleBookImages(imagePaths) {
   const results = [];
   for (let i = 0; i < imagePaths.length; i++) {
@@ -233,7 +253,9 @@ function extractCharacters(text) {
 
 module.exports = {
   recognizeText,
+  recognizeTextFromBase64,
   recognizeMultipleImages,
+  recognizeMultipleBase64,
   analyzeBookImage,
   analyzeMultipleBookImages,
   analyzeBookContent,

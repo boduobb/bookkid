@@ -6,7 +6,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { callDoubao, buildReadingSystemPrompt, buildQuizSystemPrompt, buildRoleplaySystemPrompt } = require('./doubao-chat');
-const { recognizeMultipleImages, analyzeBookContent, analyzeMultipleBookImages } = require('./doubao-vision');
+const { recognizeMultipleImages, recognizeMultipleBase64, analyzeBookContent, analyzeMultipleBookImages } = require('./doubao-vision');
 const { recognizeAudio } = require('./doubao-asr');
 const { synthesizeSpeech } = require('./doubao-tts');
 const { loadConfig, saveConfig, resetConfig, buildSystemPromptFromConfig } = require('./agent-config');
@@ -514,6 +514,98 @@ app.post('/api/upload/recognize', upload.array('images', 20), async (req, res) =
           filename: f.filename,
           size: f.size,
           url: `/uploads/${f.filename}`
+        })),
+        ocrText: ocrText,
+        confidence: 0.95,
+        ocrMode: bookData.title ? 'doubao' : 'demo'
+      }
+    });
+
+  } catch (err) {
+    console.error('图片上传识别错误:', err);
+    res.json({ success: false, message: err.message || '图片识别失败' });
+  }
+});
+
+/**
+ * 批量上传图片并识别（Base64方式）
+ * POST /api/upload/recognize-base64
+ * body: { images: ['data:image/jpeg;base64,...', ...] }
+ */
+app.post('/api/upload/recognize-base64', async (req, res) => {
+  try {
+    const { images } = req.body;
+
+    if (!images || !Array.isArray(images) || images.length === 0) {
+      return res.json({ success: false, message: '请选择要上传的图片' });
+    }
+
+    console.log(`收到 ${images.length} 张Base64图片上传`);
+
+    let ocrText = '';
+    let bookData = null;
+
+    try {
+      console.log('开始调用豆包Seed-Vision识别...');
+      ocrText = await recognizeMultipleBase64(images);
+      
+      if (!ocrText || ocrText.trim().length === 0) {
+        throw new Error('未能识别出文字内容');
+      }
+
+      console.log('豆包识别成功，文字长度:', ocrText.length);
+
+      bookData = analyzeBookContent(ocrText);
+      
+    } catch (ocrErr) {
+      console.error('豆包识别失败，切换到模拟模式:', ocrErr.message);
+      
+      const mockBooks = [
+        {
+          title: '猜猜我有多爱你',
+          author: '山姆·麦克布雷尼',
+          cover: '🐰',
+          category: '绘本故事',
+          color: '#FFE4E1',
+          summary: '小兔子和大兔子比赛谁的爱更多...',
+          content: '小兔子认真的告诉大兔子"我好爱你"，而大兔子回应小兔子说："我更爱你！"如此一来，不仅确定大兔子很爱自己，更希望自己的爱能胜过大兔子的爱。小兔子想尽办法用各种身体动作、看得见的景物来描述自己的爱意，直到他累得在大兔子的怀中睡着了。',
+          characters: ['小兔子', '大兔子']
+        },
+        {
+          title: '爷爷一定有办法',
+          author: '菲比·吉尔曼',
+          cover: '👴',
+          category: '绘本故事',
+          color: '#E3F2FD',
+          summary: '爷爷总能把旧东西变成新的...',
+          content: '当约瑟还是娃娃的时候，爷爷为他缝了一条奇妙的毯子。毯子又舒服、又保暖，还可以把噩梦通通赶跑。不过，约瑟渐渐长大了，奇妙的毯子也变得老旧了。妈妈对他说："约瑟，看看你的毯子，又破又旧，好难看，真该把它丢了。"约瑟说："爷爷一定有办法。"',
+          characters: ['约瑟', '爷爷', '妈妈']
+        },
+        {
+          title: '大卫，不可以',
+          author: '大卫·香农',
+          cover: '👦',
+          category: '绘本故事',
+          color: '#FFF3E0',
+          summary: '大卫总是做各种调皮的事...',
+          content: '大卫的妈妈总是说："大卫，不可以！"大卫伸着舌头，站在椅子上颤颤巍巍去够糖罐；大卫一身污泥回家，客厅的地毯上留下了一串黑脚印；大卫在浴缸里闹翻了天，水流成河；大卫光着屁股跑到了大街上……每一幅页面里都有妈妈说的话"大卫，不可以！"',
+          characters: ['大卫', '妈妈']
+        }
+      ];
+
+      const bookIndex = images.length % mockBooks.length;
+      bookData = mockBooks[bookIndex];
+      ocrText = '【OCR识别失败，已切换到演示模式】\n\n请上传清晰的书籍内页图片，OCR将自动识别内容。';
+    }
+
+    res.json({
+      success: true,
+      data: {
+        book: bookData,
+        imageCount: images.length,
+        images: images.map((img, i) => ({
+          index: i,
+          size: img.length
         })),
         ocrText: ocrText,
         confidence: 0.95,
